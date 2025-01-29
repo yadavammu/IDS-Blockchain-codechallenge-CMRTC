@@ -1,0 +1,46 @@
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import padding
+import os
+
+# Generate a random 256-bit key (32 bytes) and a 128-bit IV (16 bytes)
+dhttps://www.onlinegdb.com/#editor_1ef generate_key_iv():
+    key = os.urandom(32)  # 256-bit key
+    iv = os.urandom(16)   # 128-bit IV
+    return key, iv
+
+# Encrypt message
+def encrypt_message(message, key, iv):
+    # Pad the message to be a multiple of block size (AES block size is 128 bits / 16 bytes)
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(message.encode()) + padder.finalize()
+
+    # Encrypt using AES (CBC mode)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    encrypted_message = encryptor.update(padded_data) + encryptor.finalize()
+    return encrypted_message
+
+# Decrypt message
+def decrypt_message(encrypted_message, key, iv):
+    # Decrypt using AES (CBC mode)
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    decryptor = cipher.decryptor()
+    decrypted_data = decryptor.update(encrypted_message) + decryptor.finalize()
+
+    # Unpad the message
+    unpadder = padding.PKCS7(128).unpadder()
+    original_message = unpadder.update(decrypted_data) + unpadder.finalize()
+    return original_message.decode()
+
+# Example usage:
+key, iv = generate_key_iv()
+
+# Encrypting and sending the message
+message = "Hello, Hedera!"
+encrypted_message = encrypt_message(message, key, iv)
+print(f"Encrypted message: {encrypted_message}")
+
+# Decrypting and receiving the message
+decrypted_message = decrypt_message(encrypted_message, key, iv)
+print(f"Decrypted message: {decrypted_message}")
